@@ -1,18 +1,42 @@
 package com.example.bai1androidnetworking.Class;
 
-import androidx.annotation.NonNull;
+import com.google.gson.annotations.SerializedName;
 
 public class User {
-    public String name;
-    public int age;
-public  String status;
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "name='" + name + '\'' +
-                ", age=" + age +
-                ", status='" + status + '\'' +
-                '}';
+
+    @SerializedName("name")
+    private String name;
+    @SerializedName("age")
+    private int age;
+    @SerializedName("phone")
+    private String phone;
+
+    // Getters and Setters (or use Lombok for automatic generation)
+    public String getName() {
+        return name;
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+
 }

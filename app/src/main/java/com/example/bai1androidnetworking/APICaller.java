@@ -8,8 +8,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class APICaller {
 
 
-    public static final String URL = "http://192.168.0.101:9000/";
-    public static Retrofit retrofit;
+    public static final String URL = "http://26.241.100.175:9000/";
+    private static Retrofit retrofit;
 
     public static Retrofit GetRetrofitInstante() {
         if (retrofit == null) {
