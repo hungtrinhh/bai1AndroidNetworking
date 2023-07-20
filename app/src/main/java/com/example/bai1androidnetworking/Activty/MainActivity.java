@@ -1,24 +1,31 @@
 package com.example.bai1androidnetworking.Activty;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.ArrayAdapter;
+import android.view.View;
+import android.widget.Adapter;
+import android.widget.Button;
+import android.widget.Toast;
 
 import com.example.bai1androidnetworking.APICaller;
-import com.example.bai1androidnetworking.Class.GirlFriend;
-import com.example.bai1androidnetworking.Class.TypeGF;
+import com.example.bai1androidnetworking.Adapter.adapterUser;
 import com.example.bai1androidnetworking.Class.User;
 import com.example.bai1androidnetworking.Interface.Callapi;
 import com.example.bai1androidnetworking.R;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -28,40 +35,22 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     String TAG = "mainactiviti";
     private Callapi apiCaller;
+    adapterUser adapterUser;
+    private Button btnToAdd;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        apiCaller = APICaller.GetRetrofitInstante().create(Callapi.class);
-        Call<List<User>> call = apiCaller.getAllUser();
-        List<String> userString = new ArrayList<>();
-        recyclerView = findViewById(R.id.lvActivityMain);
+        findID();
 
-        Log.e(TAG, "onCreate: checkinternet : ".toUpperCase() + Checkineret());
 
-        call.enqueue(new Callback<List<User>>() {
+        btnToAdd.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
-                Log.d(TAG, "onResponse: " + response.body());
-
-                if (response.isSuccessful()) {
-                    String text = "";
-                    List<User> list = response.body();
-                    for (User u : list
-                    ) {
-                        userString.add(u.toString());
-                    }
-
-                    Log.e("MainActivity", "onResponse:  " + response.body());
-                } else {
-                    Log.e("MainActivity", "Response error: " + response.code());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<User>> call, Throwable t) {
-                Log.e(TAG, "onFailure: " + call);
+            public void onClick(View v) {
+                Intent i = new Intent(MainActivity.this, AddUser.class);
+                startActivity(i);
 
             }
         });
@@ -75,6 +64,94 @@ public class MainActivity extends AppCompatActivity {
             return networkInfo != null && networkInfo.isConnected();
         }
         return false;
+
+    }
+
+
+    void getAllUser() {
+
+        apiCaller = APICaller.GetRetrofitInstante().create(Callapi.class);
+
+        Call<List<User>> call = apiCaller.getAllUser();
+        List<String> userString = new ArrayList<>();
+        Log.e(TAG, "onCreate: checkinternet : ".toUpperCase() + Checkineret());
+
+        call.enqueue(new Callback<List<User>>() {
+            @Override
+            public void onResponse(Call<List<User>> call1, Response<List<User>> response) {
+                Log.d(TAG, "onResponse: " + response.body());
+
+                if (response.isSuccessful()) {
+                    List<User> list = response.body();
+                    for (User u : list
+                    ) {
+                        userString.add(u.toString());
+                    }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            AdapterConfig(list);
+                        }
+                    });
+
+
+                    Log.e("MainActivity", "onResponse:  " + response.body());
+                } else {
+                    Log.e("MainActivity", "Response error: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<User>> call, Throwable t) {
+                Log.e(TAG, "onFailure: " + call);
+
+            }
+        });
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+
+        getAllUser();
+
+    }
+
+    void findID() {
+
+        btnToAdd = (Button) findViewById(R.id.btnToAdd);
+        recyclerView = findViewById(R.id.lvActivityMain);
+    }
+
+    void AdapterConfig(List<User> list) {
+
+
+        adapterUser = new adapterUser(list);
+        adapterUser.setBtnDeleteClick(new adapterUser.OnBtnDeleteClick() {
+            @Override
+            public void onclick(String id) {
+                Call<User> callDelete = apiCaller.DeleteUser(id);
+                callDelete.enqueue(new Callback<User>() {
+                    @Override
+                    public void onResponse(Call<User> call1, Response<User> response) {
+
+                        getAllUser();
+                    }
+
+                    @Override
+                    public void onFailure(Call<User> call, Throwable t) {
+
+                    }
+                });
+            }
+        });
+
+        recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+        recyclerView.setAdapter(adapterUser);
+
 
     }
 
